@@ -52,11 +52,11 @@ $(document).ready(function() {
     //Create a time variable
     let time;
     //Create a # correct variable
-    let numCorrect;
+    let numCorrect = 0;
     //Create a # incorrect variable
-    let numIncorrect;
+    let numIncorrect = 0;
     //Create a # unanswered variable
-    let numUnanswered;
+    let numUnanswered = 0;
 
     //------Create the elements for the starting page
     //Create the start button
@@ -100,11 +100,33 @@ $(document).ready(function() {
     }
 
     //------Create a function that adds the elements for the start page
-    //Add the start button
+    function startingPage() {
+        //Add the start button
+        $("#content").append(startButton);
+    }
 
     //------Create a function that adds the elements for the question page
-    //Add the header for the question
-    //Add the headers for the answers
+    function questionPage() {
+        let num = numCorrect + numIncorrect + numUnanswered;
+
+        questionElem.text(questions[num].question);
+
+        let notDisplayed = [0, 1, 2, 3];
+        for(let i = 0; i < answerElems.length; i++) {
+            let rand = Math.floor(Math.random() * notDisplayed.length);
+            if (notDisplayed[rand] === 3) {
+                answerElems[i].text(questions[num].correct);
+            } else {
+                answerElems[i].text(questions[num].incorrect[notDisplayed[rand]]);
+            }
+            notDisplayed.splice(rand, 1);
+        }
+        $("#content").append(timerElem);
+        //Add the header for the question
+        $("#content").append(questionElem)
+        //Add the headers for the answers
+        $("#content").append(answerElems);
+    }
 
     //------Create a function for the answered page
     //Check the passed in answer against the current question.
