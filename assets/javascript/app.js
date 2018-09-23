@@ -51,14 +51,10 @@ $(document).ready(function() {
     let interval;
     //Create a time variable
     let time;
-
+    //Create a variable to keep track of if it is currently a question page
     let isQuestion = false;
-    //Create a # correct variable
-    let numCorrect = 0;
-    //Create a # incorrect variable
-    let numIncorrect = 0;
-    //Create a # unanswered variable
-    let numUnanswered = 0;
+    //Create a # correct variable, incorrect variable, and unanswered variable
+    let stats = [0, 0, 0];
 
     //------Create the elements for the starting page
     //Create the start button
@@ -66,35 +62,6 @@ $(document).ready(function() {
 
     //------Create the element for the timer display
     let timerElem = $("<h2>Time Remaining: <span id='time'></span></h2>");
-
-    //------Create the elements for question page
-    //Create the header for the question
-    let questionElem = $("<h2>");
-    //Create the headers for the answers
-    let answerElems = [
-        $("<h2>").addClass("answer"),
-        $("<h2>").addClass("answer"),
-        $("<h2>").addClass("answer"),
-        $("<h2>").addClass("answer")
-    ];
-
-    //------Create the elements for the answered page
-    //Create the header for whether the question was answered correctly or not,
-    //  or time ran out
-    let answeredElem = $("<h2>");
-    //Create the header for the correct answer
-    let correctAnswerElem = $("<h2>");
-
-    //------Create the elements for the stats page
-    //Create the header for affirming they are done
-    let affirmationElem = $("<h2>");
-    //Create the headers for showing the number correct, incorrect,
-    //  and unanswered.
-    let statsElems = [
-        $("<h2>Correct Answers: <span></span></h2>"),
-        $("<h2>Incorrect Answers: <span></span></h2>"),
-        $("<h2>Unanswered: <span></span></h2>"),
-    ];
 
     //------Create a function that clears the elements from the screen
     function clearPage() {
@@ -109,17 +76,21 @@ $(document).ready(function() {
 
     //------Create a function that adds the elements for the question page
     function questionPage() {
-        let num = numCorrect + numIncorrect + numUnanswered;
+        let num = currentQuestion();
 
-        questionElem.text(questions[num].question);
+        //------Create the elements for question page
+        //Create the header for the question
+        let questionElem = $("<h2>").text(questions[num].question);;
+        //Create the headers for the answers
+        let answerElems = [];
 
         let notDisplayed = [0, 1, 2, 3];
-        for(let i = 0; i < answerElems.length; i++) {
+        for(let i = 0; i < 4; i++) {
             let rand = Math.floor(Math.random() * notDisplayed.length);
             if (notDisplayed[rand] === 3) {
-                answerElems[i].text(questions[num].correct);
+                answerElems.push($("<h2>").addClass("answer").text(questions[num].correct));
             } else {
-                answerElems[i].text(questions[num].incorrect[notDisplayed[rand]]);
+                answerElems.push($("<h2>").addClass("answer").text(questions[num].incorrect[notDisplayed[rand]]));
             }
             notDisplayed.splice(rand, 1);
         }
@@ -130,20 +101,25 @@ $(document).ready(function() {
 
     //------Create a function for the answered page
     function answerPage(answer) {
-        var correctAnswer = questions[numCorrect + numIncorrect + numUnanswered].correct;
+        //------Create the elements for the answered page
+        //Create the header for whether the question was answered correctly or not,
+        //  or time ran out
+        let answeredElem = $("<h2>");
+        //Create the header for the correct answer
+        let correctAnswer = questions[currentQuestion()].correct;
         //Check the passed in answer against the current question.
         //Increment the corresponding stat.
         if (answer === null) {
             answeredElem.text("You ran out of time!");  
-            numUnanswered++;
+            stats[2]++;
         } else if (correctAnswer === answer) {
             answeredElem.text("You got it!");  
-            numCorrect++
+            stats[0]++
         } else {
             answeredElem.text("Not quite!");  
-            numIncorrect++;
+            stats[1]++;
         }
-        correctAnswerElem.text(`The correct answer was: ${correctAnswer}`);
+        let correctAnswerElem = $("<h2>").text(`The correct answer was: ${correctAnswer}`);
 
         //Add the header for whether the question was answered correctly or not,
         //  or time ran out
@@ -153,11 +129,20 @@ $(document).ready(function() {
 
     //------Create a function that adds the elements for the stats page
     function statsPage() {
-        affirmationElem.text("All done, here's how you did!");
-        
-        $(statsElems[0].children()[0]).text(numCorrect);
-        $(statsElems[1].children()[0]).text(numIncorrect);
-        $(statsElems[2].children()[0]).text(numUnanswered);
+        //------Create the elements for the stats page
+        //Create the header for affirming they are done
+        let affirmationElem = $("<h2>").text("All done, here's how you did!");
+        //Create the headers for showing the number correct, incorrect,
+        //  and unanswered.
+        let statsElems = [
+            $("<h2>Correct Answers: <span></span></h2>"),
+            $("<h2>Incorrect Answers: <span></span></h2>"),
+            $("<h2>Unanswered: <span></span></h2>"),
+        ];
+
+        for(let i = 0; i < stats.length; i++) {
+            $(statsElems[i].children()[0]).text(stats[i]);
+        }
 
         //Add the header for affirming they are done
         //Add the headers for showing the number correct, incorrect,
@@ -165,9 +150,9 @@ $(document).ready(function() {
         //Add the start button
         $("#content").append(affirmationElem, statsElems, startButton);
         
-        numCorrect = 0;
-        numIncorrect = 0;
-        numUnanswered = 0;
+        for(let i = 0; i < stats.length; i++) {
+            stats[i] = 0;
+        }
     }
 
     //------Create a function that goes through the various pages sequentially
@@ -184,7 +169,7 @@ $(document).ready(function() {
         if (answer !== "") {
             time = 3;
             answerPage(answer);
-        } else if (numCorrect + numIncorrect + numUnanswered < questions.length) {
+        } else if (currentQuestion() < questions.length) {
             time = 30;
             isQuestion = true;
             questionPage()
@@ -216,9 +201,17 @@ $(document).ready(function() {
         }
     }
 
+    function currentQuestion() {
+        let sum = 0;
+        for(let i = 0; i < stats.length; i++) {
+            sum += stats[i];
+        }
+        return sum;
+    }
+
     //------Create and event listener for mouseclicks on buttons
     $(document).on("click", ".answer", (event) => {
-        var answer;
+        let answer;
         //If it was an answer clicked pass what was clicked
         if ($(event.currentTarget).attr("id") === "start") {
             answer = "";
