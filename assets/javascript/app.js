@@ -60,7 +60,7 @@ $(document).ready(function() {
 
     //------Create the elements for the starting page
     //Create the start button
-    let startButton = $("<h2>").addClass("answer").text("Start Game");
+    let startButton = $("<h2>").attr("id", "start").addClass("answer").text("Start Game");
 
     //------Create the element for the timer display
     let timerElem = $("<h2>Time Remaining: <span id='time'></span></h2>");
@@ -129,11 +129,29 @@ $(document).ready(function() {
     }
 
     //------Create a function for the answered page
-    //Check the passed in answer against the current question.
-    //Increment the corresponding stat.
-    //Add the header for whether the question was answered correctly or not,
-    //  or time ran out
-    //Add the header for the correct answer
+    function answerPage(answer) {
+        var correctAnswer = questions[numCorrect + numIncorrect + numUnanswered].correct;
+        //Check the passed in answer against the current question.
+        //Increment the corresponding stat.
+        if (answer === null) {
+            answeredElem.text("You ran out of time!");  
+            numUnanswered++;
+        } else if (correctAnswer === answer) {
+            answeredElem.text("You got it!");  
+            numCorrect++
+        } else {
+            answeredElem.text("Not quite!");  
+            numIncorrect++;
+        }
+        correctAnswerElem.text(`The correct answer was: ${correctAnswer}`);
+
+        $("#content").append(timerElem);
+        //Add the header for whether the question was answered correctly or not,
+        //  or time ran out
+        $("#content").append(answeredElem);
+        //Add the header for the correct answer
+        $("#content").append(correctAnswerElem);
+    }
 
     //------Create a function that adds the elements for the stats page
     //Add the header for affirming they are done
