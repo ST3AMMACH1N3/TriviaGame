@@ -89,9 +89,9 @@ $(document).ready(function() {
     //Create the headers for showing the number correct, incorrect,
     //  and unanswered.
     let statsElems = [
-        $("<h2>"),
-        $("<h2>"),
-        $("<h2>")
+        $("<h2>Correct Answers: <span></span></h2>"),
+        $("<h2>Incorrect Answers: <span></span></h2>"),
+        $("<h2>Unanswered: <span></span></h2>"),
     ];
 
     //------Create a function that clears the elements from the screen
@@ -121,11 +121,9 @@ $(document).ready(function() {
             }
             notDisplayed.splice(rand, 1);
         }
-        $("#content").append(timerElem);
         //Add the header for the question
-        $("#content").append(questionElem)
         //Add the headers for the answers
-        $("#content").append(answerElems);
+        $("#content").append(timerElem, questionElem, answerElems);
     }
 
     //------Create a function for the answered page
@@ -145,19 +143,26 @@ $(document).ready(function() {
         }
         correctAnswerElem.text(`The correct answer was: ${correctAnswer}`);
 
-        $("#content").append(timerElem);
         //Add the header for whether the question was answered correctly or not,
         //  or time ran out
-        $("#content").append(answeredElem);
         //Add the header for the correct answer
-        $("#content").append(correctAnswerElem);
+        $("#content").append(timerElem, answeredElem, correctAnswerElem);
     }
 
     //------Create a function that adds the elements for the stats page
-    //Add the header for affirming they are done
-    //Add the headers for showing the number correct, incorrect,
-    //  and unanswered.
-    //Add the start button
+    function statsPage() {
+        affirmationElem.text("All done, here's how you did!");
+        
+        $(statsElems[0].children()[0]).text(numCorrect);
+        $(statsElems[1].children()[0]).text(numIncorrect);
+        $(statsElems[2].children()[0]).text(numUnanswered);
+
+        //Add the header for affirming they are done
+        //Add the headers for showing the number correct, incorrect,
+        //  and unanswered.
+        //Add the start button
+        $("#content").append(affirmationElem, statsElems, startButton);
+    }
 
     //------Create a function that goes through the various pages sequentially
     //If it is a start page or an answered page and there are more questions
