@@ -51,6 +51,8 @@ $(document).ready(function() {
     let interval;
     //Create a time variable
     let time;
+
+    let isQuestion = false;
     //Create a # correct variable
     let numCorrect = 0;
     //Create a # incorrect variable
@@ -95,7 +97,7 @@ $(document).ready(function() {
     ];
 
     //------Create a function that clears the elements from the screen
-    function clearScreen() {
+    function clearPage() {
         $("#content").children().detach();
     }
 
@@ -162,24 +164,71 @@ $(document).ready(function() {
         //  and unanswered.
         //Add the start button
         $("#content").append(affirmationElem, statsElems, startButton);
+        
+        numCorrect = 0;
+        numIncorrect = 0;
+        numUnanswered = 0;
     }
 
     //------Create a function that goes through the various pages sequentially
-    //If it is a start page or an answered page and there are more questions
-    //  set the timer to 30 seconds and call the question page function.
-    //If there are no more question pages left call the stats page function.
-    //If it is a question page set the timer to 10 seconds and call the answer
-    //  page function passing in what was clicked on the last page.
-    //Set the countdown interval for one second
+    function sequence(answer = null) {
+        clearInterval(interval);
+        isQuestion = false;
+        clearPage();
+
+        //If it is a question page set the timer to 10 seconds and call the answer
+        //  page function passing in what was clicked on the last page.
+        //If it is a start page or an answered page and there are more questions
+        //  set the timer to 30 seconds and call the question page function.
+        
+        if (answer !== "") {
+            time = 3;
+            answerPage(answer);
+        } else if (numCorrect + numIncorrect + numUnanswered < questions.length) {
+            time = 30;
+            isQuestion = true;
+            questionPage()
+            $("#time").text(time);
+        } else {
+            statsPage();
+            return;
+        }
+
+        //Set the countdown interval for one second
+        interval = setInterval(countDown, 1000);        
+    }
 
     //------Create a countdown function
-    //Count down the timer
-    //If it is a question page display the time left
-    //If the timer gets to 0 call the sequential function and clear the
-    //  interval.
+    function countDown() {
+        //Count down the timer
+        time--;
+        //If it is a question page display the time left
+        if (isQuestion) {
+            $("#time").text(time);
+        }
+        //If the timer gets to 0 call the sequential function
+        if (time < 1) {
+            if (isQuestion) {
+                sequence();
+            } else {
+                sequence("");
+            }
+        }
+    }
 
     //------Create and event listener for mouseclicks on buttons
-    //Clear the interval if one exists
-    //Call the sequential function
-    //If it was an answer clicked pass what was clicked
+    $(document).on("click", ".answer", (event) => {
+        var answer;
+        //If it was an answer clicked pass what was clicked
+        if ($(event.currentTarget).attr("id") === "start") {
+            answer = "";
+        } else {
+            answer = $(event.currentTarget).text();
+        }
+        //Call the sequential function
+        sequence(answer); 
+    });
+
+    startingPage();
+    
 });
